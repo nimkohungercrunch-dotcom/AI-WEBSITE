@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// PricingSettings: One row per shop, stores merchant's automation preferences
+model PricingSettings {
+  id                         Int     @id @default(autoincrement())
+  shop                       String  @unique
+  inventoryThreshold         Int     @default(50)
+  maxPriceIncreasePercent    Float   @default(50)
+  reviewFrequency            String  @default("daily") // enum: hourly, daily, weekly, monthly
+  aiBehaviorPrompt           String?
+  updatedAt                  DateTime @updatedAt
+
+  @@index([shop])
+}
+
+/// PriceHistory: Audit log of all price changes made by the AI engine
+model PriceHistory {
+  id                  Int     @id @default(autoincrement())
+  shop                String
+  productId           String
+  variantId           String
+  productTitle        String
+  oldPrice            Float
+  newPrice            Float
+  inventoryAtChange   Int
+  aiReason            String
+  createdAt           DateTime @default(now())
+
+  @@index([shop])
+  @@index([createdAt])
+  @@index([productId])
+}
